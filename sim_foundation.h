@@ -16,6 +16,7 @@
 
 //changed at 2020-4-20
 #include"changes/router.h"
+#include"sim_protoengine.h"
 
 class sim_foundation {
 
@@ -30,6 +31,8 @@ class sim_foundation {
 		long cube_size_;//维度
 		long router_counter_;//路由器总数
 		long packet_counter_;
+		//changed at 2024-6-3
+		ProtoEngine proto_engine_;
 
 		//changed at 2021-10-26
 		//将文件流改为队列，以提高速度
@@ -65,6 +68,8 @@ class sim_foundation {
 	   												{return inter_network_;}
 		/*sim_router_template*/CRouter & router(const add_type& a);
 		const /*sim_router_template*/CRouter & router(const add_type& a) const;
+		ProtoEngine& protoEngine() { return proto_engine_; }
+		const ProtoEngine& protoEngine() const { return proto_engine_; }
 		bool valid_address(const add_type & a) const;
 
 		void receive_EVG_message(mess_event mesg);

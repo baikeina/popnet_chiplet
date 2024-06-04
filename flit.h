@@ -23,6 +23,7 @@ public:
 		add_type sor_addr_;
 		add_type des_addr_;
 		time_type start_time_;
+		time_type send_finish_time_;
 		time_type finish_time_;
 		Data_type data_;
 
@@ -41,10 +42,14 @@ public:
 		time_type start_time() {return start_time_;}
 		time_type start_time() const {return start_time_;}
 
+		time_type send_finish_time() {return send_finish_time_;}
+		time_type send_finish_time() const {return send_finish_time_;}
+
 		time_type finish_time() {return finish_time_;}
 		time_type finish_time() const {return finish_time_;}
 
 		void set_start(time_type a) {start_time_ = a;}
+		void set_send_finish(time_type a) {send_finish_time_ = a;}
 		void set_finish(time_type a) {finish_time_ = a;}
 
 		Data_type & data() {return data_;}

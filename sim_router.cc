@@ -284,7 +284,7 @@ void sim_router_template::inputTrace(const SPacket&packet)
 	if(localInputTraces.empty()){
 		local_input_time_=packet.startTime;
 	}
-	localInputTraces.push(packet);
+	localInputTraces.push_back(packet);
 }
 //***************************************************************************//
 ostream &operator<<(ostream &os, const input_template &Ri)
@@ -450,7 +450,7 @@ void sim_router_template::receive_packet()
 				return;
 			}
 		} */
-		localInputTraces.pop();
+		localInputTraces.erase(localInputTraces.begin());
 		if(localInputTraces.empty()){
 			local_input_time_=LOCAL_INPUT_TIME_0;
 		}else{
@@ -551,17 +551,21 @@ void sim_router_template::inject_packet(long a, add_type &b, add_type &c,
 			//changed at 2020-5-9
 			/* input_module_.add_flit(0, (vc_t.first),  
 								flit_template(a, HEADER_, b, c, d, flit_data)); */
-			input_module_.add_flit(0, vc_t.first, flit_template(a, e == 1 ? SINGLE : HEADER_, b, c, d, flit_data,packet_id));
+			flit_template flit(a, e == 1 ? SINGLE : HEADER_, b, c, d, flit_data,packet_id);
+			flit.set_send_finish(d + l);
+			input_module_.add_flit(0, vc_t.first, flit);
 		}
 		else if (l == (e - 1))
 		{
-			input_module_.add_flit(0, (vc_t.first),
-								   flit_template(a, TAIL_, b, c, d, flit_data,packet_id));
+			flit_template flit(a, TAIL_, b, c, d, flit_data,packet_id);
+			flit.set_send_finish(d + l);
+			input_module_.add_flit(0, (vc_t.first), flit);
 		}
 		else
 		{
-			input_module_.add_flit(0, (vc_t.first),
-								   flit_template(a, BODY_, b, c, d, flit_data,packet_id));
+			flit_template flit(a, BODY_, b, c, d, flit_data,packet_id);
+			flit.set_send_finish(d + l);
+			input_module_.add_flit(0, (vc_t.first), flit);
 		}
 		power_module_.power_buffer_write(0, flit_data);
 	}
@@ -1121,21 +1125,36 @@ void sim_router_template::flit_traversal(long i)
 //receive the flit at the destination router
 void sim_router_template::accept_flit(time_type a, const flit_template &b)
 {
-	//changed at 2020-5-9
-	static ofstream ofs(configuration::wap().delayinfo_fname().c_str());
-	if (/* b.type() == TAIL_ */ isTail(b.type()))
+	//changed at 2024-6-4
+	if (configuration::wap().sync_protocol_enable() == false)
 	{
-		mess_queue::wm_pointer().TotFin_inc();
-		time_type t = a - b.start_time();
-		delay_update(t);
-		//发送时间（周期），源地址，目的地址，延迟（周期）
-		ofs << b.start_time() << ' '
-			/* <<a<<' ' */;
-		for (auto &x : b.sor_addr())
-			ofs << x << ' ';
-		for (auto &x : b.des_addr())
-			ofs << x << ' ';
-		ofs << t << endl;
+		//changed at 2020-5-9
+		static ofstream ofs(configuration::wap().delayinfo_fname().c_str());
+		if (/* b.type() == TAIL_ */ isTail(b.type()))
+		{
+			mess_queue::wm_pointer().TotFin_inc();
+			time_type t = a - b.start_time();
+			delay_update(t);
+			//发送时间（周期），源地址，目的地址，延迟（周期）
+			ofs << (long)b.start_time() << ' '
+				/* <<a<<' ' */;
+			for (auto &x : b.sor_addr())
+				ofs << x << ' ';
+			for (auto &x : b.des_addr())
+				ofs << x << ' ';
+			ofs << t << endl;
+		}
+	}
+	else
+	{
+		if (/* b.type() == TAIL_ */ isTail(b.type()))
+		{
+			mess_queue::wm_pointer().TotFin_inc();
+			time_type t = a - b.start_time();
+			delay_update(t);
+
+			sim_foundation::wsf().protoEngine().update_trans(a, b);
+		}
 	}
 }
 

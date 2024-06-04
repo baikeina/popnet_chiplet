@@ -70,17 +70,17 @@ void mess_queue::simulator() {
 		//if(current_time_>current_message.event_start()+S_ELPS_)continue;
 		current_time_ = current_message.event_start();
 
-		if(current_time_ > report_t) {
-		   cout<<"Current time: "<<current_time_<<" Incoming packets: "
-			   <<total_incoming<<" Finished packets: "<<total_finished_<<endl;
-			//changed at 2020-5-23
-			//cout<<"Wire Message Count: "<<wireMsgCnt<<" Credit Message Count: "<<creditMsgCnt<<endl;
-		   sim_foundation::wsf().simulation_results();
-		   //changed at 2022-4-13
-		   //自定义报告周期
-		   //report_t += REPORT_PERIOD_;
-		   report_t+=configuration::ap().getReportPeriod();
-		}
+		//if(current_time_ > report_t) {
+		//   cout<<"Current time: "<<current_time_<<" Incoming packets: "
+		//	   <<total_incoming<<" Finished packets: "<<total_finished_<<endl;
+		//	//changed at 2020-5-23
+		//	//cout<<"Wire Message Count: "<<wireMsgCnt<<" Credit Message Count: "<<creditMsgCnt<<endl;
+		//   sim_foundation::wsf().simulation_results();
+		//   //changed at 2022-4-13
+		//   //自定义报告周期
+		//   //report_t += REPORT_PERIOD_;
+		//   report_t+=configuration::ap().getReportPeriod();
+		//}
 		
 		switch(current_message.event_type()) {
 

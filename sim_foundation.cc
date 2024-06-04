@@ -23,7 +23,9 @@ sim_foundation::sim_foundation():
 	cube_size_(0),
 	router_counter_(0),
 	packet_counter_(0)/* ,
-	inFile_() */
+	inFile_() */,
+	//changed at 2024-6-3
+	proto_engine_()
 
 {
 	s_f_ = this;
@@ -111,29 +113,62 @@ void readPacket(SPacket&packet,ifstream&ifs,size_t dimension)
 //一下子把所有轨迹读入内存
 void sim_foundation::readTraceFile()
 {
-	ifstream traceFile(configuration::wap().trace_fname().c_str());
-	SPacket packet;
-	size_t cnt=0;
-	//注入时间，源地址，目的地址，数据包大小
-	while(traceFile>>packet.startTime){
-		//readPacket(packet,traceFile,cube_size_);
-		readAddress(packet.sourceAddress,traceFile,cube_size_);
-		readAddress(packet.destinationAddress,traceFile,cube_size_);
-		traceFile>>packet.packetSize;
-		packet.id=cnt;
+	// Sample trace file.
+	if (!configuration::wap().sync_protocol_enable())
+	{
+		ifstream traceFile(configuration::wap().trace_fname().c_str());
+		SPacket packet;
+		size_t cnt=0;
+		//注入时间，源地址，目的地址，数据包大小
+		while(traceFile>>packet.startTime){
+			//readPacket(packet,traceFile,cube_size_);
+			readAddress(packet.sourceAddress,traceFile,cube_size_);
+			readAddress(packet.destinationAddress,traceFile,cube_size_);
+			traceFile>>packet.packetSize;
+			packet.id=cnt;
 #ifdef FILTERING
-		if(packet.startTime>=START_TIME){
+			if(packet.startTime>=START_TIME){
 #endif
-		inputTraces.push(packet);
-		router(packet.sourceAddress).inputTrace(packet);
-		cnt++;
+			inputTraces.push(packet);
+			router(packet.sourceAddress).inputTrace(packet);
+			cnt++;
 #ifdef FILTERING
+			}
+#endif
+			packet.sourceAddress.clear();
+			packet.destinationAddress.clear();
 		}
-#endif
-		packet.sourceAddress.clear();
-		packet.destinationAddress.clear();
+		cout<<"Packet count: "<<cnt<<endl;
 	}
-	cout<<"Packet count: "<<cnt<<endl;
+	// Synchronization protocol trace file.
+	else
+	{
+		ifstream traceFile(configuration::wap().trace_fname().c_str());
+		ProtoPacket packet;
+		size_t cnt = 0;
+		while(traceFile >> packet.srcTime >> packet.dstTime)
+		{
+			//readPacket(packet,traceFile,cube_size_);
+			readAddress(packet.sourceAddress,traceFile,cube_size_);
+			readAddress(packet.destinationAddress,traceFile,cube_size_);
+			traceFile >> packet.packetSize >> packet.protoDesc;
+			packet.id=cnt;
+#ifdef FILTERING
+			if(packet.startTime>=START_TIME){
+#endif
+			// TODO
+			SPacket spacket = proto_engine_.add_trans(packet);
+			inputTraces.push(spacket);
+			router(packet.sourceAddress).inputTrace(spacket);
+			cnt++;
+#ifdef FILTERING
+			}
+#endif
+			packet.sourceAddress.clear();
+			packet.destinationAddress.clear();
+		}
+		cout<<"Transaction count: "<<cnt<<endl;
+	}
 }
 
 //***************************************************************************//

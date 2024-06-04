@@ -20,7 +20,7 @@ set(CMAKE_CXX_FLAGS "-DS_OUT_DEBUG -Wno-deprecated -g -DPOWER_TEST")
 include_directories(${POWER_RELEASE}/power ${POWER_RELEASE}/library)
 include_directories(${GRAPH_LIB})
 
-set(SIM_SRCS SString.cc SStd.cc SRGen.cc configuration.cc flit.cc sim_router.cc sim_routing.cc sim_vcarb.cc  mess_event.cc sim_foundation.cc mess_queue.cc main.cc)
+set(SIM_SRCS SString.cc SStd.cc SRGen.cc configuration.cc flit.cc sim_router.cc sim_routing.cc sim_vcarb.cc  mess_event.cc sim_foundation.cc sim_protoengine.cc mess_queue.cc main.cc)
 aux_source_directory(changes NEW_SRCS)
 
 link_directories(${POWER_RELEASE}/power)

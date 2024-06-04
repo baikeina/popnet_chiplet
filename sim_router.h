@@ -255,6 +255,7 @@ struct SPacket
 
 	SPacket()
 	{
+		startTime = -1;
 		size_t addSize=configuration::ap().cube_number();
 		sourceAddress.reserve(addSize);
 		destinationAddress.reserve(addSize);
@@ -307,7 +308,7 @@ class sim_router_template {
 		//将文件改为队列，以提高速度
 		//input trace file
 		//ifstream * localinFile_;//本地轨迹文件流，本路由器的轨迹文件流
-		std::queue<SPacket>localInputTraces;
+		std::vector<SPacket>localInputTraces;
 
 		virtual time_type getWireDelay(long port);
 		time_type getWireDelay_mesh(long port);
