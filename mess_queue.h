@@ -93,5 +93,7 @@ class mess_queue {
 
 		//changed at 2022-4-20
 		void setInitEvent();
+
+		void update_EVG_cycle(time_type a);
 };
 #endif

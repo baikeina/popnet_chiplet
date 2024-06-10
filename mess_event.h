@@ -35,6 +35,8 @@ class mess_event {
 		flit_template flit_;
 
 	public:
+		//changed at 2024-6-10
+		void set_event_start(time_type a) {time_ = a;}
 
 		time_type event_start() {return time_;}
 		time_type event_start() const {return time_;}
