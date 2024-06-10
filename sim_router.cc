@@ -283,8 +283,24 @@ void sim_router_template::inputTrace(const SPacket&packet)
 {
 	if(localInputTraces.empty()){
 		local_input_time_=packet.startTime;
+		localInputTraces.push_back(packet);
 	}
-	localInputTraces.push_back(packet);
+	else {
+		bool has_insert = false;
+		for (std::size_t i = 0; i < localInputTraces.size(); i ++) {
+			if (localInputTraces[i].startTime >= packet.startTime) {
+				localInputTraces.insert(localInputTraces.begin() + i, packet);
+				has_insert = true;
+				if (i == 0) {
+					local_input_time_ = packet.startTime;
+				}
+				break;
+			}
+		}
+		if (!has_insert) {
+			localInputTraces.push_back(packet);
+		}
+	}
 }
 //***************************************************************************//
 ostream &operator<<(ostream &os, const input_template &Ri)

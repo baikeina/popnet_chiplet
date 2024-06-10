@@ -1,12 +1,11 @@
 
 #include "sim_protoengine.h"
+#include "sim_foundation.h"
 
 
 SPacket ProtoEngine::add_trans(const ProtoPacket& trans)
 {
     ProtoStateMachine sm(trans);
-    trans_list_.push_back(sm);
-
     sm.status = ProtoStateMachine::DATA_TRANS;
 
     // TODO
@@ -17,6 +16,9 @@ SPacket ProtoEngine::add_trans(const ProtoPacket& trans)
     packet.destinationAddress = trans.destinationAddress;
     packet.packetSize = trans.packetSize;
     packet.id = trans.id;
+
+    trans_list_.push_back(sm);
+
     return packet;
 }
 
@@ -26,12 +28,32 @@ void ProtoEngine::update_trans(time_type a, const flit_template& flit)
     {
         if (trans.id == flit.getPacketId())
         {
-            trans.srcEndTime = flit.send_finish_time();
-            if (trans.dstEndTime < a)
-            {
-                trans.dstEndTime = a;
+            trans.packetDelay.push_back(flit.send_finish_time() - flit.start_time());
+            trans.packetDelay.push_back(a - flit.start_time());
+
+            if (trans.protoDesc & 0x10) { // Locker
+                std::cout << "Locker" << std::endl;
+                if (trans.status == ProtoStateMachine::DATA_TRANS)
+                {
+                    // Add new packet.
+                    SPacket packet;
+                    packet.startTime = (a > trans.dstTime) ? a : trans.dstTime;
+                    packet.sourceAddress = trans.destinationAddress;
+                    packet.destinationAddress = trans.sourceAddress;
+                    packet.packetSize = 1;
+                    packet.id = trans.id;
+                    std::cout << "update_trans " << packet.startTime << std::endl;
+
+                    sim_foundation::wsf().inputTrace(packet);
+                    sim_foundation::wsf().router(packet.sourceAddress).inputTrace(packet);
+
+                    trans.status = ProtoStateMachine::ACK_TRANS;
+                } else {
+                    trans.status = ProtoStateMachine::DONE;
+                }
+            } else {
+                trans.status = ProtoStateMachine::DONE;
             }
-            trans.status = ProtoStateMachine::DONE;
 
             if (trans.status == ProtoStateMachine::DONE)
             {
@@ -42,8 +64,10 @@ void ProtoEngine::update_trans(time_type a, const flit_template& flit)
                     ofs << x << ' ';
                 for (auto &x : trans.destinationAddress)
                     ofs << x << ' ';
-                ofs << (long)(trans.srcEndTime - trans.srcTime) << ' ';
-                ofs << (long)(trans.dstEndTime - trans.dstTime) << endl;
+                ofs << trans.protoDesc << ' ' << trans.packetDelay.size() << ' ';
+                for (auto &x : trans.packetDelay)
+                    ofs << (long)x << ' ';
+                ofs << endl;
             }
         }
     }

@@ -34,13 +34,14 @@ class sim_foundation {
 		//changed at 2024-6-3
 		ProtoEngine proto_engine_;
 
+		static string file_name_;
+		static sim_foundation * s_f_;
+
+	public:
 		//changed at 2021-10-26
 		//将文件流改为队列，以提高速度
 		//ifstream inFile_;
-		std::queue<SPacket>inputTraces;
-
-		static string file_name_;
-		static sim_foundation * s_f_;
+		std::vector<SPacket>inputTraces;
 
 	public:
 		class file_error: public exception {
@@ -88,6 +89,8 @@ class sim_foundation {
 
 		//changed at 2021-10-26
 		void readTraceFile();
+
+		void inputTrace(const SPacket&packet);
 };
 
 void readPacket(SPacket&packet,std::ifstream&ifs,size_t dimension);

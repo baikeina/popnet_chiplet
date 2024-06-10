@@ -129,7 +129,7 @@ void sim_foundation::readTraceFile()
 #ifdef FILTERING
 			if(packet.startTime>=START_TIME){
 #endif
-			inputTraces.push(packet);
+			inputTrace(packet);
 			router(packet.sourceAddress).inputTrace(packet);
 			cnt++;
 #ifdef FILTERING
@@ -158,7 +158,7 @@ void sim_foundation::readTraceFile()
 #endif
 			// TODO
 			SPacket spacket = proto_engine_.add_trans(packet);
-			inputTraces.push(spacket);
+			inputTrace(spacket);
 			router(packet.sourceAddress).inputTrace(spacket);
 			cnt++;
 #ifdef FILTERING
@@ -266,7 +266,7 @@ void sim_foundation::receive_EVG_message(mess_event mesg)
 						event_time_t, EVG_));
 		}
 	} */
-	inputTraces.pop();
+	inputTraces.erase(inputTraces.begin());
 	if(!inputTraces.empty())mess_queue::wm_pointer().add_message(mess_event(inputTraces.front().startTime,EVG_));
 }
 //***************************************************************************//
@@ -406,4 +406,19 @@ void sim_foundation::receive_RECONFIGURATION_message(const mess_event&msg)
 	CReconfigTopoRouter::reconfigurate(eventTime,nextReconfigTime);
 	cout<<"Enter reconfiguration period "<<CReconfigTopoRouter::getCurrentReconfigurationPeriod()<<endl;
 	mess_queue::wm_pointer().add_message(mess_event(nextReconfigTime,RECONFIGURATION));
+}
+
+void sim_foundation::inputTrace(const SPacket&packet)
+{
+	bool has_insert = false;
+	for (std::size_t i = 0; i < inputTraces.size(); i ++) {
+		if (inputTraces[i].startTime >= packet.startTime) {
+			inputTraces.insert(inputTraces.begin() + i, packet);
+			has_insert = true;
+			break;
+		}
+	}
+	if (!has_insert) {
+		inputTraces.push_back(packet);
+	}
 }

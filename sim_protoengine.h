@@ -32,7 +32,6 @@ class ProtoStateMachine
 
     public:
         time_type srcTime,dstTime;
-        time_type srcEndTime,dstEndTime;
         add_type sourceAddress,destinationAddress;
         long packetSize;
         long protoDesc;
@@ -40,11 +39,11 @@ class ProtoStateMachine
         typedef size_t TId;
         TId id;
         Status status;
+        std::vector<time_type> packetDelay;
 
     public:
         ProtoStateMachine(const ProtoPacket& trans)
             : srcTime(trans.srcTime), dstTime(trans.dstTime),
-              srcEndTime(trans.srcTime), dstEndTime(trans.dstTime),
               sourceAddress(trans.sourceAddress), destinationAddress(trans.destinationAddress),
               packetSize(trans.packetSize), protoDesc(trans.protoDesc), id(trans.id),
               status(IDLE)
