@@ -2,6 +2,7 @@
 #define SIM_PROTO_ENGINE_
 
 #include <map>
+#include <set>
 
 #include "configuration.h"
 #include "sim_router.h"
@@ -54,19 +55,26 @@ class ProtoStateMachine {
 class ProtoEngine {
    private:
     vector<ProtoStateMachine> trans_list_;
-    map<int, int> barrier_count_map_;
-    map<int, vector<int> > barrier_items_map_;
 
    public:
     ProtoEngine() {}
 
     SPacket add_trans(const ProtoPacket& trans);
 
+    vector<ProtoStateMachine>::iterator get_trans(flit_template::TPacketId id) {
+        for (vector<ProtoStateMachine>::iterator it = trans_list_.begin(); it != trans_list_.end();
+             it++) {
+            if (it->id == id) {
+                return it;
+            }
+        }
+        return trans_list_.end();
+    }
+
     void update_trans(time_type a, const flit_template& flit);
 
+    void update_trans_ack_at_receive_time(time_type a, ProtoStateMachine& trans);
     void update_trans_normal(time_type a, ProtoStateMachine& trans);
-    void update_trans_locker(time_type a, ProtoStateMachine& trans);
-    void update_trans_barrier(time_type a, ProtoStateMachine& trans);
 };
 
 #endif
