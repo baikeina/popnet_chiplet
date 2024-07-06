@@ -206,18 +206,21 @@ void mess_queue::update_EVG_cycle(time_type a)
 	bool evg_found = false;
 	std::vector<mess_event> temp_event_queue;
 
-	// Copy events back to message queue.
 	while (m_q_.size() > 0)
 	{
 		temp_event_queue.push_back(m_q_.top());
 		m_q_.pop();
 	}
 
+	// Copy events back to message queue.
 	while (temp_event_queue.size() > 0)
 	{
 		mess_event x = temp_event_queue.front();
-		if (x.event_type() == EVG_) {
-			x.set_event_start(a);
+		if (x.event_type() == EVG_ && !evg_found) {
+			if (x.event_start() > a) {
+				std::cout << "update event start to " << a << std::endl;
+				x.set_event_start(a);
+			}
 			evg_found = true;
 		}
 		temp_event_queue.erase(temp_event_queue.begin());

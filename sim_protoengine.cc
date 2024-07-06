@@ -78,7 +78,7 @@ void ProtoEngine::update_trans_ack_at_receive_time(time_type a, ProtoStateMachin
 
         sim_foundation::wsf().inputTrace(packet);
         sim_foundation::wsf().router(packet.sourceAddress).inputTrace(packet);
-        mess_queue::wm_pointer().update_EVG_cycle(a);
+        mess_queue::wm_pointer().update_EVG_cycle(packet.startTime);
 
         trans.status = ProtoStateMachine::ACK_TRANS;
     } else {
